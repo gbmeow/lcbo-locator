@@ -8,10 +8,81 @@
  * Controller of the boozerApp
  */
 angular.module('boozerApp')
-  .controller('MainCtrl', function ($scope) {
-    $scope.awesomeThings = [
-      'HTML5 Boilerplate',
-      'AngularJS',
-      'Karma'
-    ];
-  });
+  .controller('MainCtrl', function ($scope, $localStorage, productSource) {
+
+  	var dataContainer = []; 
+  		//Limiting it to 3 pages of data
+  		//Reason: API does not provide a way to get items out by category
+
+  	var beer = [];
+  	var wine = [];
+  	var spirits = [];
+  	var ciders = [];
+
+  	$scope.$storage = $localStorage;
+
+  	//Chaining $promises here - to populate dataContainer	
+	var pullDatasetFromLCBO = 
+		productSource.get({pageNumber: 1})
+			.$promise.then(function(data) {
+      			dataContainer.push(data.result);
+
+      	productSource.get({pageNumber: 2})
+      		.$promise.then(function(data) {
+      			dataContainer.push(data.result);
+      	
+      	productSource.get({pageNumber: 3})
+		     .$promise.then(function(data) {
+		      	dataContainer.push(data.result);
+		      	breakProductIntoCat(dataContainer);
+		      	})
+      		
+      		});
+
+    	});
+
+  	function breakProductIntoCat(dataset) {
+  		dataset.forEach(function(singleSet) {
+  			singleSet.forEach(function(singleElement) {
+				var elementCategory = singleElement['primary_category'];
+				processElement(singleElement, elementCategory);
+  			})
+  		})
+  		$scope.$storage = $localStorage.$default({
+		    beer: beer,
+		    wine: wine,
+		    spirits: spirits,
+		    ciders: ciders
+		});
+  	}
+
+  	function processElement(element, category) {
+  			switch (category) {
+  				case "Beer":
+  					beer.push(element);
+  					break;
+  				case "Wine":
+  					wine.push(element);
+  					break;
+  				case "Spirits":
+	  				spirits.push(element);
+	  				break;
+	  			case "Ciders":
+	  				ciders.push(element);
+	  				break;
+  			}
+  	}
+
+  })
+	.controller('itemCtrl', function($scope, $localStorage, $routeParams){
+		
+		var category = $routeParams.categoryName;
+		$scope.items = $localStorage[category];
+
+		$scope.addToFav = function(item) {
+			$localStorage.$default({
+				fav: item
+			})
+		}
+
+	});

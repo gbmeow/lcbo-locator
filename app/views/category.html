@@ -1,0 +1,9 @@
+<div class="jumbotron">
+  <h2>Click to make it FAV :)</h2>
+	<ul>
+		<li ng-repeat="item in items" ng-click="addToFav(item)">
+			<img src="{{item.image_thumb_url}}" />
+			<p>{{item.name}}</p>
+		</li>
+	</ul>
+</div>
