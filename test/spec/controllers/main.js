@@ -16,7 +16,22 @@ describe('Controller: MainCtrl', function () {
     });
   }));
 
-  it('should attach a list of awesomeThings to the scope', function () {
-    expect(scope.awesomeThings.length).toBe(3);
+
+  //Todo: Test this with ngMock
+  it("should pull in data from the SoundCloud database",
+  inject(function(SoundCloudService, $httpBackend) {
+
+  $httpBackend.expect('GET',
+    'https://api.soundcloud.com/tracks.json?' + 
+      'client_id=YOUR_CLIENT_ID&q=dubstep')
+    .respond(200,
+      '[{ title : "some awesome dubstep song from 2013", id : 20 }]');
+
+  SoundCloudService.get('dubstep').then(function(data) {
+    expect(data[0].title).toContain('awesome dubstep song');
   });
+
+  $httpBackend.flush();
+  });
+
 });

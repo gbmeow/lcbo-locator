@@ -32,10 +32,42 @@ angular
         redirectTo: '/'
       });
   })
+  .factory('productSearch', ['$resource', function($resource) {
+    return $resource('https://lcboapi.com/products?access_key=MDpmNTE3YmNhZS04YmM1LTExZTQtODM0ZC1iYjUyY2YzYTNhMWM6dFZPaTRLNXRjRXZnZGhKM1JhMnJvTHhjZm9ldEtXYms4dGEw&q=:query', {query: '@query'});
+  }])
   .factory('productSource', ['$resource', function($resource){
     return $resource('https://lcboapi.com/products?access_key=MDpmNTE3YmNhZS04YmM1LTExZTQtODM0ZC1iYjUyY2YzYTNhMWM6dFZPaTRLNXRjRXZnZGhKM1JhMnJvTHhjZm9ldEtXYms4dGEw&page=:pageNumber', {pageNumber: '@number'});
-      // {'ACCESS_K': 'MDpmNTE3YmNhZS04YmM1LTExZTQtODM0ZC1iYjUyY2YzYTNhMWM6dFZPaTRLNXRjRXZnZGhKM1JhMnJvTHhjZm9ldEtXYms4dGEw',
-      //   'ITEMS_N': '@number',
-      //   'PAGE_N' : '@number'
-      //   });
-  }]);
+  }])
+  .factory('favouriteManager', ['$localStorage', function($localStorage) {
+    
+    var favourites  = [];
+    var favourite   = this;
+
+    this.saveToFav = function(item) {
+      favourites.push(item);
+      $localStorage.fav = favourites;
+    }
+    this.removeFav = function(index) {
+      favourites.splice(index, 1);
+      $localStorage.fav = favourites;
+    }
+    this.getAll = function() {
+      return $localStorage.fav;
+    }
+
+    return favourite;
+
+  }])
+  .directive('myFav', function() {
+    return {
+      restrict: "E",
+      templateUrl: 'views/myFavs.html',
+      scope: {model: "=ngModel"},
+      link: function(scope) {
+        scope.items = scope.model;
+        scope.$watch('model', function() {
+          scope.items = scope.model;
+        })
+      }
+    }
+  })

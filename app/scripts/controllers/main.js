@@ -8,7 +8,7 @@
  * Controller of the boozerApp
  */
 angular.module('boozerApp')
-  .controller('MainCtrl', function ($scope, $localStorage, productSource) {
+  .controller('MainCtrl', function ($scope, productSource, productSearch, favouriteManager, $localStorage) {
 
   	var dataContainer = []; 
   		//Limiting it to 3 pages of data
@@ -19,10 +19,10 @@ angular.module('boozerApp')
   	var spirits = [];
   	var ciders = [];
 
-  	$scope.$storage = $localStorage;
+    $scope.$storage = $localStorage;
 
   	//Chaining $promises here - to populate dataContainer	
-	var pullDatasetFromLCBO = 
+	 var pullDatasetFromLCBO = 
 		productSource.get({pageNumber: 1})
 			.$promise.then(function(data) {
       			dataContainer.push(data.result);
@@ -41,19 +41,38 @@ angular.module('boozerApp')
 
     	});
 
-  	function breakProductIntoCat(dataset) {
+      //Search Functionality 
+      $scope.searchResult = [];
+      $scope.search = function(query) {
+        productSearch.get({query: query})
+          .$promise.then(function(data) {
+            $scope.searchResult.push(data.result);
+          })  
+      }
+
+      $scope.delete = function(index) {
+      }
+
+      $scope.favourites = favouriteManager.getAll();
+
+      $scope.addToFav = function(item) {
+        favouriteManager.saveToFav(item);
+        $scope.favourites = $localStorage.fav;
+      }
+
+  	 function breakProductIntoCat(dataset) {
   		dataset.forEach(function(singleSet) {
   			singleSet.forEach(function(singleElement) {
 				var elementCategory = singleElement['primary_category'];
 				processElement(singleElement, elementCategory);
   			})
-  		})
-  		$scope.$storage = $localStorage.$default({
-		    beer: beer,
-		    wine: wine,
-		    spirits: spirits,
-		    ciders: ciders
-		});
+  		});
+      $scope.$storage = $localStorage.$default({
+        beer: beer,
+        wine: wine,
+        spirits: spirits,
+        ciders: ciders
+      });
   	}
 
   	function processElement(element, category) {
@@ -74,15 +93,8 @@ angular.module('boozerApp')
   	}
 
   })
-	.controller('itemCtrl', function($scope, $localStorage, $routeParams){
-		
+	.controller('itemCtrl', function($scope, $routeParams, $localStorage){
 		var category = $routeParams.categoryName;
 		$scope.items = $localStorage[category];
-
-		$scope.addToFav = function(item) {
-			$localStorage.$default({
-				fav: item
-			})
-		}
 
 	});

@@ -1,8 +1,26 @@
 <div class="jumbotron">
+<my-fav ng-model="favourites"></my-fav>
   <h1>Welcome to Boozer</h1>
   <h2>Choose Your Category</h2>
+    <form ng-submit="search(query)">
+  	<label for="searchField">
+  		<input type="text" name="searchField" ng-model="query" />
+	</label>
+  <input type="submit"></input>
+</form>
+<div ng-show='searchResult.length' class="searchResults">
+<ul>
+	<li ng-repeat="item in searchResult[0]" ng-click="addToFav(item)">
+			<img src="{{item.image_thumb_url}}" />
+			<p>{{item.name}}</p>
+		</li>
+	</ul>
+</div>
+
+<div ng-hide='searchResult.length' class="categoryNav">
   <p><a class="btn btn-lg btn-success" ng-href="#/category/beer">Beer<span class="glyphicon glyphicon-ok"></span></a></p>
   <p><a class="btn btn-lg btn-success" ng-href="#/category/wine">Wine<span class="glyphicon glyphicon-ok"></span></a></p>
   <p><a class="btn btn-lg btn-success" ng-href="#/category/spiritis">Spiritis<span class="glyphicon glyphicon-ok"></span></a></p>
   <p><a class="btn btn-lg btn-success" ng-href="#/category/ciders">Ciders<span class="glyphicon glyphicon-ok"></span></a></p>
+</div>
 </div>
