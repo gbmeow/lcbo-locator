@@ -1,0 +1,13 @@
+<div class="jumbotron">
+<h2>Your {{drink}} is available here</h2>
+<ul>
+<li ng-repeat="item in stores track by item.name">
+	<p>{{item.name}}</p>
+	<a href="tel:+1{{item.telephone}}">Call</a>
+	<hr />
+	<a ui-sref="directions({lat: item.latitude, lon: item.longitude})">Directions</a>
+</li>
+</ul>
+
+
+</div>

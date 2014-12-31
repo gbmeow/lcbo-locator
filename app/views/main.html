@@ -2,13 +2,20 @@
 <my-fav ng-model="favourites"></my-fav>
   <h1>Welcome to Boozer</h1>
   <h2>Choose Your Category</h2>
-    <form ng-submit="search(query)">
+
+
+<form ng-submit="search(query)">
   	<label for="searchField">
   		<input type="text" name="searchField" ng-model="query" />
 	</label>
   <input type="submit"></input>
 </form>
-<div ng-show='searchResult.length' class="searchResults">
+
+<div ng-show="notFound" style="background: red; width: 100%; height: 100px;">{{notFound}}
+<hr />
+<a ng-href="{{suggestion}}">{{suggestion}}</a>
+</div>
+<div ng-show='searchResult.length || tennis' class="searchResults">
 <ul>
 	<li ng-repeat="item in searchResult[0]" ng-click="addToFav(item)">
 			<img src="{{item.image_thumb_url}}" />
@@ -18,9 +25,9 @@
 </div>
 
 <div ng-hide='searchResult.length' class="categoryNav">
-  <p><a class="btn btn-lg btn-success" ng-href="#/category/beer">Beer<span class="glyphicon glyphicon-ok"></span></a></p>
-  <p><a class="btn btn-lg btn-success" ng-href="#/category/wine">Wine<span class="glyphicon glyphicon-ok"></span></a></p>
-  <p><a class="btn btn-lg btn-success" ng-href="#/category/spiritis">Spiritis<span class="glyphicon glyphicon-ok"></span></a></p>
-  <p><a class="btn btn-lg btn-success" ng-href="#/category/ciders">Ciders<span class="glyphicon glyphicon-ok"></span></a></p>
+  <p><a class="btn btn-lg btn-success" ui-sref="category({categoryName: 'beer'})">Beer<span class="glyphicon glyphicon-ok"></span></a></p>
+  <p><a class="btn btn-lg btn-success" ui-sref="category({categoryName: 'wine'})">Wine<span class="glyphicon glyphicon-ok"></span></a></p>
+  <p><a class="btn btn-lg btn-success" ui-sref="category({categoryName: 'spirits'})">Spiritis<span class="glyphicon glyphicon-ok"></span></a></p>
+  <p><a class="btn btn-lg btn-success" ui-sref="category({categoryName: 'ciders'})">Ciders<span class="glyphicon glyphicon-ok"></span></a></p>
 </div>
 </div>

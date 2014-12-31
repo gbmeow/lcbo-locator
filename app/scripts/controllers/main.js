@@ -8,7 +8,7 @@
  * Controller of the boozerApp
  */
 angular.module('boozerApp')
-  .controller('MainCtrl', function ($scope, productSource, productSearch, favouriteManager, $localStorage) {
+  .controller('MainCtrl', function ($scope, productSource, productSearch, favouriteManager, $localStorage, $timeout) {
 
   	var dataContainer = []; 
   		//Limiting it to 3 pages of data
@@ -18,8 +18,6 @@ angular.module('boozerApp')
   	var wine = [];
   	var spirits = [];
   	var ciders = [];
-
-    $scope.$storage = $localStorage;
 
   	//Chaining $promises here - to populate dataContainer	
 	 var pullDatasetFromLCBO = 
@@ -46,28 +44,42 @@ angular.module('boozerApp')
       $scope.search = function(query) {
         productSearch.get({query: query})
           .$promise.then(function(data) {
-            $scope.searchResult.push(data.result);
-          })  
-      }
 
-      $scope.delete = function(index) {
+            if (data.result.length === 0) {
+                $scope.notFound = "Hey Cannot find";
+                console.log(data.suggestion);
+                $scope.suggestion  = data.suggestion;
+              
+              //Show and Hide message
+              $timeout(function() {
+                $scope.notFound = '';
+              $scope.suggestion = '';
+                
+              }, 2000);
+              
+            } else {
+              $scope.searchResult.push(data.result);
+            }
+            
+          })  
+        $scope.query = '';
       }
 
       $scope.favourites = favouriteManager.getAll();
 
       $scope.addToFav = function(item) {
         favouriteManager.saveToFav(item);
-        $scope.favourites = $localStorage.fav;
       }
 
   	 function breakProductIntoCat(dataset) {
   		dataset.forEach(function(singleSet) {
   			singleSet.forEach(function(singleElement) {
-				var elementCategory = singleElement['primary_category'];
-				processElement(singleElement, elementCategory);
+				  processElement(singleElement, singleElement['primary_category']);
   			})
   		});
-      $scope.$storage = $localStorage.$default({
+
+      //1 Time load - not sure if it requires a service
+      $localStorage.$default({
         beer: beer,
         wine: wine,
         spirits: spirits,
@@ -75,6 +87,8 @@ angular.module('boozerApp')
       });
   	}
 
+    //Not sure if this is the best way to do it
+      //should be done more programmatically
   	function processElement(element, category) {
   			switch (category) {
   				case "Beer":
@@ -93,8 +107,83 @@ angular.module('boozerApp')
   	}
 
   })
-	.controller('itemCtrl', function($scope, $routeParams, $localStorage){
-		var category = $routeParams.categoryName;
+
+	.controller('itemCtrl', function($scope, $stateParams, $state, $localStorage, favouriteManager){
+		var category = $stateParams.categoryName;
+
+    //Get rid of $localStorage 
+      //Move it into its own service to manage our LocalStorage access 
 		$scope.items = $localStorage[category];
 
-	});
+    $scope.addToFav = function(item) {
+        favouriteManager.saveToFav(item);
+        $state.go('index');
+    }
+
+	})
+  .controller('storeCtrl', function($scope, $stateParams, $localStorage, favouriteManager, closestStores, storeInventory){
+    var drinkId  = $stateParams.id;
+    $scope.stores = [];  
+
+    $localStorage.fav.forEach(function(object) {
+      if (object.id == drinkId) {
+        $scope.drink = object.name;
+      }
+    });
+
+    if (!$localStorage.location) {
+      navigator.geolocation.getCurrentPosition(LocationLoadedsuccess, LocationLoadederror);
+    } else {
+
+      var latitude  = $localStorage.latitude;
+      var longitude = $localStorage.longitude;
+      closestStores.get({lat: latitude, lon: longitude})
+        .$promise.then(function(closStoredata) {
+            storeInventory.get({drinkId: drinkId})
+              .$promise.then(function(prodStoredata) {  
+                filterStores(closStoredata.result, prodStoredata.result);    
+              });
+            
+      });
+      }
+
+
+        //#1) Could not call lcboapi.com/stores/{store_id}/products/{product_id}/inventory directly 
+        //#2) Less API calls 
+      
+      function filterStores(closStores, productStores) {
+        productStores.forEach(function(storeWithProduct) {
+          closStores.forEach(function(storeCloseToUser) {
+            if (storeWithProduct.store_id === storeCloseToUser.id) {
+              $scope.stores.push(storeCloseToUser);
+            }
+
+          })
+        })
+      }
+
+    function LocationLoadedsuccess(position) {
+      console.log(position);
+      var latitude  = position.coords.latitude;
+      var longitude = position.coords.longitude;
+      favouriteManager.saveUserLocation(latitude, longitude);
+    }
+
+    function LocationLoadederror() {
+      console.log("failed");
+    }
+    
+  })
+
+  .controller('directionsCtrl', function($scope, $stateParams, $localStorage, directionsToStore){
+    var latitude  = $stateParams.lat;
+    var longitude = $stateParams.lon;
+    //we call Google API 
+    var userLocation = $localStorage.location.latitude +  ',' + $localStorage.location.longitude;
+    var storeLocation = latitude +  ',' + longitude;
+    directionsToStore.get({user: userLocation, store: storeLocation})
+        .$promise.then(function(data) {
+            $scope.directions = "Retrived Green";
+        })
+
+   });

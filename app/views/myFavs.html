@@ -1,6 +1,9 @@
 <div style="background: red;">
 	<h4>Favs you have added</h4>
 	<ul>
-		<li ng-repeat="item in items">{{item.name}}</li>
+	<a ng-hide="items.length">Add First Fav</a>
+	<li ng-repeat="item in items track by item.name">{{item.name}}
+	<a ng-click="remove($index)">Delete</a>
+	<a ui-sref="stores({id: item.id})">Find my booze</a></li>
 	</ul>
 </div>
