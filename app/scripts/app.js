@@ -15,9 +15,10 @@ angular.module('boozerApp', [
     'ngSanitize',
     'ngTouch',
     'ngStorage',
-    'ui.router'
+    'ui.router',
+    'dbaq.google.directions'
   ])
-  .config(function ($stateProvider) {
+  .config(['$stateProvider', function ($stateProvider) {
     $stateProvider
         .state('index', {
             url: "/",
@@ -55,7 +56,7 @@ angular.module('boozerApp', [
                 }
             }
         })
-  })
+  }])
   .factory('productSearch', ['$resource', function($resource) {
     return $resource('https://lcboapi.com/products?access_key=MDpmNTE3YmNhZS04YmM1LTExZTQtODM0ZC1iYjUyY2YzYTNhMWM6dFZPaTRLNXRjRXZnZGhKM1JhMnJvTHhjZm9ldEtXYms4dGEw&q=:query', {query: '@query'});
   }])
@@ -67,9 +68,6 @@ angular.module('boozerApp', [
   }])
   .factory('storeInventory', ['$resource', function($resource) {
     return $resource('https://lcboapi.com/inventories?access_key=MDpmNTE3YmNhZS04YmM1LTExZTQtODM0ZC1iYjUyY2YzYTNhMWM6dFZPaTRLNXRjRXZnZGhKM1JhMnJvTHhjZm9ldEtXYms4dGEw&product_id=:drinkId', {drinkId: '@name'});
-  }])
-  .factory('directionsToStore', ['$resource', function($resource) {
-    return $resource('https://maps.googleapis.com/maps/api/directions/json?origin=:user&destination=:store&key=AIzaSyAf2rjkM1dFE1ZTNTkyrPRHnv1a66zvO3g', {user: '@name', store: '@name'});
   }])
   .factory('favouriteManager', ['$localStorage', function($localStorage) {
     var favourite   = this;

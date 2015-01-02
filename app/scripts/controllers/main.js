@@ -8,7 +8,7 @@
  * Controller of the boozerApp
  */
 angular.module('boozerApp')
-  .controller('MainCtrl', function ($scope, productSource, productSearch, favouriteManager, $localStorage, $timeout) {
+  .controller('MainCtrl', ['$scope', 'productSource', 'productSearch', 'favouriteManager', '$localStorage', '$timeout', function ($scope, productSource, productSearch, favouriteManager, $localStorage, $timeout) {
 
   	var dataContainer = []; 
   		//Limiting it to 3 pages of data
@@ -106,9 +106,8 @@ angular.module('boozerApp')
   			}
   	}
 
-  })
-
-	.controller('itemCtrl', function($scope, $stateParams, $state, $localStorage, favouriteManager){
+  }])
+	.controller('itemCtrl', ['$scope', '$stateParams', '$state', '$localStorage', 'favouriteManager', function($scope, $stateParams, $state, $localStorage, favouriteManager){
 		var category = $stateParams.categoryName;
 
     //Get rid of $localStorage 
@@ -120,8 +119,8 @@ angular.module('boozerApp')
         $state.go('index');
     }
 
-	})
-  .controller('storeCtrl', function($scope, $stateParams, $localStorage, favouriteManager, closestStores, storeInventory){
+	}])
+  .controller('storeCtrl', ['$scope', '$stateParams', '$localStorage', 'favouriteManager', 'closestStores', 'storeInventory', function($scope, $stateParams, $localStorage, favouriteManager, closestStores, storeInventory){
     var drinkId  = $stateParams.id;
     $scope.stores = [];  
 
@@ -163,7 +162,6 @@ angular.module('boozerApp')
       }
 
     function LocationLoadedsuccess(position) {
-      console.log(position);
       var latitude  = position.coords.latitude;
       var longitude = position.coords.longitude;
       favouriteManager.saveUserLocation(latitude, longitude);
@@ -173,17 +171,26 @@ angular.module('boozerApp')
       console.log("failed");
     }
     
-  })
+  }])
 
-  .controller('directionsCtrl', function($scope, $stateParams, $localStorage, directionsToStore){
+  .controller('directionsCtrl', ['$scope', '$stateParams', '$localStorage', 'googleDirections', function($scope, $stateParams, $localStorage, googleDirections){
     var latitude  = $stateParams.lat;
     var longitude = $stateParams.lon;
-    //we call Google API 
+
     var userLocation = $localStorage.location.latitude +  ',' + $localStorage.location.longitude;
     var storeLocation = latitude +  ',' + longitude;
-    directionsToStore.get({user: userLocation, store: storeLocation})
-        .$promise.then(function(data) {
-            $scope.directions = "Retrived Green";
-        })
 
-   });
+    //Client Side Google API
+    var args = {
+      origin: userLocation,
+      destination: storeLocation,
+      travelMode: 'driving'
+    }
+
+    $scope.directions;
+
+    googleDirections.getDirections(args).then(function(directions) {
+      $scope.directions = directions.routes[0].legs[0].steps;
+    });
+
+   }]);
